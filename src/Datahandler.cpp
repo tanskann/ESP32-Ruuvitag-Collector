@@ -4,11 +4,12 @@
 #include "storage.hpp"
 #include "network.hpp"
 
-Datahandler::Datahandler(std::string dataIn, std::string macAddressIn){
+Datahandler::Datahandler(std::string dataIn, std::string macAddressIn, std::int rssiIn){
     dataLength=dataIn.length();
     if(dataLength>2){
         data=dataIn;
         macAddress=macAddressIn;
+        rssi=rssiIn;
         if(data[0]==0x99 && data[1]==0x04){
             if(data[2]==0x3 && dataLength>15){
                 measurement.setType(Measurement::ruuviV3);
@@ -135,15 +136,22 @@ void Datahandler::sendMqtt(){
     stream << "{\"temperature\":" << measurement.getTemperature() << ",";
     stream << "\"humidity\":" << measurement.getHumidity() << ",";
     stream << "\"pressure\":" << measurement.getPressure() << ",";
-    stream << "\"battery\":" << (double)measurement.getVoltage()/1000 << ",";
+    stream << "\"batteryVoltage\":" << (double)measurement.getVoltage()/1000 << ",";
 
-    stream << "\"accel_x\":" << measurement.getAccelX()/1000 << ",";
-    stream << "\"accel_y\":" << measurement.getAccelY()/1000 << ",";
-    stream << "\"accel_z\":" << measurement.getAccelZ()/1000 << ",";
+    stream << "\"accelerationX\":" << measurement.getAccelX()/1000 << ",";
+    stream << "\"accelerationY\":" << measurement.getAccelY()/1000 << ",";
+    stream << "\"accelerationZ\":" << measurement.getAccelZ()/1000 << ",";
     stream << "\"epoch\":" << measurement.getEpoch() << ",";
-    stream << "\"txdbm\":" << measurement.getTXdBm() << ",";
-    stream << "\"move_count\":" << measurement.getMoveCount() << ",";
-    stream << "\"sequence\":" << measurement.getSequence() << "}";
+    stream << "\"txPower\":" << measurement.getTXdBm() << ",";
+    stream << "\"movementCounter\":" << measurement.getMoveCount() << ",";
+    stream << "\"airDensity\":" << measurement.getAirDensity() << ",";
+    stream << "\"absoluteHumidity\":" << measurement.getAbsoluteHumidity() << ",";
+    stream << "\"accelerationTotal\":" << measurement.getAccelerationTotal() << ",";
+    stream << "\"dewPoint\":" << measurement.getDewPoint() << ",";
+    stream << "\"equilibriumVaporPressure\":" << measurement.getEquilibriumVaporPressure() << ",";
+    stream << "\"rssi\":" << rssi << ",";
+
+    stream << "\"measurementSequenceNumber\":" << measurement.getSequence() << "}";
 
     payload=stream.str();
     network::mqtt::publish(topic,payload);

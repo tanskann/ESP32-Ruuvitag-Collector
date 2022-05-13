@@ -1,6 +1,7 @@
 // Measurement.cpp - Part of ESP32 Ruuvitag Collector
 // Hannu Pirila 2019
 #include "Measurement.hpp"
+#include <math.h>
 
 using namespace std;
 
@@ -41,7 +42,7 @@ void Measurement::build(string dataIn){
             sequence=     getUShort(data, 18);
             break;
         default:
-            break; 
+            break;
     }
 }
 
@@ -92,7 +93,7 @@ std::string Measurement::toStr(Measurement::measurementFormatT measurementFormat
         sMovecount   << "m=" << moveCount;
         sSequence    << "s=" << sequence;
     }
-    
+
     stream << sTemperature.str()  << ",";
     stream << sPressure.str()     << ",";
     stream << sHumidity.str()     << ",";
@@ -172,4 +173,25 @@ int Measurement::getMoveCount(){
 
 int Measurement::getSequence(){
     return sequence;
+}
+
+double Measurement::getAirDensity(){
+    return 1.2929 * 273.15 / (temperature + 273.15) * (pressure - 0.3783 * humidity / 100 * this->getEquilibriumVaporPressure()) / 101300;
+}
+
+int Measurement::getAbsoluteHumidity(){
+    return this->getEquilibriumVaporPressure(temperature) * humidity * 0.021674 / (273.15 + temperature);
+}
+
+int Measurement::getAccelerationTotal(){
+    return sqrt(accelX * accelX + accelY * accelY + accelZ * accelZ)
+}
+
+int Measurement::getDewPoint(){
+    double v = log(humidity / 100 * this->getEquilibriumVaporPressure() / 611.2);
+    return -243.5 * v / (v - 17.67);
+}
+
+int Measurement::getEquilibriumVaporPressure(){
+    return 611.2 * exp(17.67 * temperature / (243.5 + temperature));
 }

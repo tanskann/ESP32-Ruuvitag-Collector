@@ -9,6 +9,7 @@ void AdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice){
     BLEAddress bleAddress=BLEAddress(advertisedDevice.getAddress());
     string data=advertisedDevice.getManufacturerData();
     string mac;
+    string rssi=advertisedDevice.getRSSI();
 
     mac=buildMac(bleAddress);
 
@@ -22,7 +23,7 @@ void AdvertisedDeviceCallbacks::onResult(BLEAdvertisedDevice advertisedDevice){
         processMac=true;
     }
     if(processMac){
-        Datahandler dh=Datahandler(data,mac);
+        Datahandler dh=Datahandler(data,mac,rssi);
         dh.setTime();
         dh.buildMeasurement();
         dh.writeStorage();
